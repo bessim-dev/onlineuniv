@@ -19,17 +19,15 @@ spring:
     show-sql: true
 
   mail:
-    host: smtp.freesmtpservers.com
-    port: 25
-    username: hello
-    password: hello
+    host: smtp.gmail.com
+    port: 587
+    username: bessim.boujebli@gmail.com
+    password: qfxizzkbbkribbpo
 
     properties:
       mail:
         smtp:
-          ssl:
-            trust: "*"
-          auth: false
+          auth: true
           starttls:
             enable: true
           connectiontimeout: 5000
