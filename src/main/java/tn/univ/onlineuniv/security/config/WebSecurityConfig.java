@@ -10,7 +10,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import tn.univ.onlineuniv.app_user.AppUserService;
+import tn.univ.onlineuniv.services.AppUserService;
 
 @Configuration
 @AllArgsConstructor

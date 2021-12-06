@@ -1,4 +1,4 @@
-package tn.univ.onlineuniv.app_user;
+package tn.univ.onlineuniv.models;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;

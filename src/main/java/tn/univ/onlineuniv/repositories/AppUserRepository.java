@@ -1,4 +1,4 @@
-package tn.univ.onlineuniv.app_user;
+package tn.univ.onlineuniv.repositories;
 
 
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
+import tn.univ.onlineuniv.models.AppUser;
 
 import java.util.Optional;
 

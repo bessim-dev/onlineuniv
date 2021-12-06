@@ -1,7 +1,9 @@
-package tn.univ.onlineuniv.registration.token;
+package tn.univ.onlineuniv.services;
 
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
+import tn.univ.onlineuniv.models.ConfirmationToken;
+import tn.univ.onlineuniv.repositories.ConfirmationTokenRepository;
 
 import java.time.LocalDateTime;
 import java.util.Optional;

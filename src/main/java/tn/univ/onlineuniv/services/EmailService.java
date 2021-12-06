@@ -1,4 +1,4 @@
-package tn.univ.onlineuniv.email;
+package tn.univ.onlineuniv.services;
 
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;

@@ -1,4 +1,4 @@
-package tn.univ.onlineuniv.registration;
+package tn.univ.onlineuniv.services;
 
 import org.springframework.stereotype.Service;
 

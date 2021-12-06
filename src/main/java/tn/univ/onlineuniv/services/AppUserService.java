@@ -1,4 +1,4 @@
-package tn.univ.onlineuniv.app_user;
+package tn.univ.onlineuniv.services;
 
 import lombok.AllArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -6,8 +6,9 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import tn.univ.onlineuniv.registration.token.ConfirmationToken;
-import tn.univ.onlineuniv.registration.token.ConfirmationTokenService;
+import tn.univ.onlineuniv.models.AppUser;
+import tn.univ.onlineuniv.models.ConfirmationToken;
+import tn.univ.onlineuniv.repositories.AppUserRepository;
 
 import java.time.LocalDateTime;
 import java.util.UUID;

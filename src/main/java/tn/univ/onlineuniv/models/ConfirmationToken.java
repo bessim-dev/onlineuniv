@@ -1,9 +1,8 @@
-package tn.univ.onlineuniv.registration.token;
+package tn.univ.onlineuniv.models;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import tn.univ.onlineuniv.app_user.AppUser;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;

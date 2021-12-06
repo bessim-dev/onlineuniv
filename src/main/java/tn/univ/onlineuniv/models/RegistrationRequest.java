@@ -1,4 +1,4 @@
-package tn.univ.onlineuniv.registration;
+package tn.univ.onlineuniv.models;
 
 
 import lombok.AllArgsConstructor;
