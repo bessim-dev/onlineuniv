@@ -1,64 +1,51 @@
 package tn.univ.onlineuniv.models;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
-@Getter
-@Setter
-@EqualsAndHashCode
+
+@Data
 @NoArgsConstructor
+@AllArgsConstructor
 @Entity
-public class AppUser implements UserDetails {
-    // each row in a table to contain a unique value
-    @SequenceGenerator(
-            name = "sequence",
-            sequenceName = "sequence",
-            allocationSize=1
-    )
+@Table(name = "users")
+public class User implements UserDetails {
     @Id
-    @GeneratedValue(
-            strategy = GenerationType.SEQUENCE,
-            generator = "sequence"
-    )
+    @GeneratedValue(strategy = GenerationType.AUTO)
     private Long id;
+
     private String firstName;
     private String lastName;
     private String email;
     private String phone;
     private String password;
-    @Enumerated(EnumType.STRING)
-    private AppUserRole appUserRole;
+
+    @ManyToMany(fetch = FetchType.EAGER)
+    private Collection<Role> roles = new ArrayList<>();
+
     private Boolean locked = false;
     private Boolean enabled = false;
-
-    public AppUser(String firstName, String lastName,  String email,String phone, String password, AppUserRole appUserRole) {
+    public User(String firstName, String lastName,  String email,String phone, String password,Collection<Role> roles) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.phone = phone;
         this.password = password;
-        this.appUserRole = appUserRole;
+        this.roles = roles;
     }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        SimpleGrantedAuthority authority = new SimpleGrantedAuthority(appUserRole.name());
-        return Collections.singletonList(authority);
-    }
-    @Override
-    public String getPassword() {
-        return password;
+        Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
+        roles.forEach(role -> authorities.add(new SimpleGrantedAuthority(role.getName())));
+        return authorities;
     }
 
-    @Override
     public String getUsername() {
         return email;
     }
@@ -82,4 +69,6 @@ public class AppUser implements UserDetails {
     public boolean isEnabled() {
         return enabled;
     }
+
+
 }

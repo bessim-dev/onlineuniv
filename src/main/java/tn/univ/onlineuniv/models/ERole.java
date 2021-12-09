@@ -1,6 +1,6 @@
 package tn.univ.onlineuniv.models;
 
-public enum AppUserRole {
+public enum ERole {
     ADMIN,
     TEACHER,
     STUDENT
