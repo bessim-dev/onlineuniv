@@ -9,13 +9,17 @@ import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+import tn.univ.onlineuniv.models.ERole;
+import tn.univ.onlineuniv.repositories.UserRepository;
 import tn.univ.onlineuniv.security.utils.FilterException;
 import tn.univ.onlineuniv.models.Role;
 import tn.univ.onlineuniv.models.User;
+import tn.univ.onlineuniv.security.utils.JwtUtils;
 import tn.univ.onlineuniv.services.UserService;
 
 import javax.servlet.http.HttpServletRequest;
@@ -31,8 +35,9 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class UserController {
     private final UserService userService;
+    private final UserRepository userRepository;
     private final FilterException filterException = new FilterException();
-
+    private final JwtUtils jwtUtils = new JwtUtils();
 
     @GetMapping("/users")
     public ResponseEntity<List<User>>getUsers(){
@@ -57,22 +62,45 @@ public class UserController {
     public String confirm(@RequestParam("token") String token) {
         return userService.confirmToken(token);
     }
+    @PutMapping("/user/lock/{id}")
+    public ResponseEntity<?> lockUserAccount(@PathVariable("id") long id) {
+        Optional<User> user = userRepository.findById(id);
+        if (user.isPresent()) {
+            if(!user.get().isAccountNonLocked()){
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }else{
+                return new ResponseEntity<>(userService.lockUser(id), HttpStatus.OK);
+            }
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
+    @PutMapping("/user/unlock/{id}")
+    public ResponseEntity<?> unlockUserAccount(@PathVariable("id") long id) {
+        Optional<User> user = userRepository.findById(id);
+        if (user.isPresent()) {
+            if(!user.get().isAccountNonLocked()){
+                return new ResponseEntity<>(userService.unlockUser(id), HttpStatus.OK);
+
+            }else{
+                return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+            }
+
+        } else {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
     @GetMapping("/refresh-token")
     public void refreshToken(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         if(authorizationHeader != null && authorizationHeader.startsWith("Bearer ")){
             try {
                 String refreshToken = authorizationHeader.substring(7);
-                Algorithm algorithm = Algorithm.HMAC256("bessim".getBytes());
-                JWTVerifier verifier = JWT.require(algorithm).build();
-                DecodedJWT decodedJWT = verifier.verify(refreshToken);
+                DecodedJWT decodedJWT = jwtUtils.decodeTokens(refreshToken);
                 String email = decodedJWT.getSubject();
                 User user = userService.getUser(email);
-                String accessToken = JWT.create().withSubject(user.getUsername())
-                        .withExpiresAt(new Date(System.currentTimeMillis() + 10*60*1000))
-                        .withIssuer(request.getRequestURI().toString())
-                        .withClaim("roles",user.getRoles().stream().map(Role::getName).collect(Collectors.toList()))
-                        .sign(algorithm);
+                List<String> authorities = user.getRoles().stream().map(Role -> Role.getName().name()).collect(Collectors.toList());
+                String accessToken = jwtUtils.createAccessToken(user,authorities,request);
                 Map<String,String> tokens = new HashMap<>();
                 tokens.put("accessToken",accessToken);
                 tokens.put("refreshToken",refreshToken);
@@ -81,7 +109,6 @@ public class UserController {
             } catch (Exception e){
                 filterException.failedFilter(e,response);
             }
-
         }else{
             throw new RuntimeException("refresh token missing");
         }
@@ -90,5 +117,5 @@ public class UserController {
 @Data
 class RoleToUserForm{
     private String username;
-    private String role;
+    private ERole role;
 }

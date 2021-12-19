@@ -28,7 +28,7 @@ public class User implements UserDetails {
     @ManyToMany(fetch = FetchType.EAGER)
     private Collection<Role> roles = new ArrayList<>();
 
-    private Boolean locked = false;
+    private Boolean locked = true;
     private Boolean enabled = false;
     public User(String firstName, String lastName,  String email,String phone, String password,Collection<Role> roles) {
         this.firstName = firstName;
@@ -38,11 +38,21 @@ public class User implements UserDetails {
         this.password = password;
         this.roles = roles;
     }
+    public User(String firstName, String lastName,  String email,String phone, String password,Collection<Role> roles,boolean locked,boolean enabled) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.phone = phone;
+        this.password = password;
+        this.roles = roles;
+        this.enabled = enabled;
+        this.locked = locked;
+    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
-        roles.forEach(role -> authorities.add(new SimpleGrantedAuthority(role.getName())));
+        roles.forEach(role -> authorities.add(new SimpleGrantedAuthority(role.getName().name())));
         return authorities;
     }
 

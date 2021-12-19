@@ -7,7 +7,7 @@ server:
 spring:
   datasource:
     password: root
-    url: jdbc:postgresql://localhost:5432/registration
+    url: jdbc:postgresql://localhost:5432/online_university
     username: postgres
   jpa:
     hibernate:

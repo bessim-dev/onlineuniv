@@ -1,26 +1,33 @@
 package tn.univ.onlineuniv.security.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import tn.univ.onlineuniv.security.utils.JwtUtils;
+import tn.univ.onlineuniv.services.UserService;
 
 import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
-    private final JwtUtils jwtUtils = new JwtUtils();
+    private final JwtUtils jwtUtils = new JwtUtils() ;
     public CustomAuthenticationFilter(AuthenticationManager authenticationManager) {
         this.authenticationManager = authenticationManager;
     }
@@ -36,7 +43,8 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) throws IOException {
         User user = (User) authentication.getPrincipal();
-        String accessToken = jwtUtils.createAccessToken(user,request);
+        List<String> authorities = user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList());
+        String accessToken = jwtUtils.createAccessToken(user,authorities,request);
         String refreshToken = jwtUtils.createRefreshToken(user, request);
         Map<String,String> tokens = new HashMap<>();
         tokens.put("accessToken",accessToken);
@@ -59,7 +67,7 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
             error.put("error","Account expired, please contact administrator!");
         } else if (e instanceof DisabledException) {
             log.error("Error logging in: {}",e.getMessage());
-            error.put("error","Account is disabled, please contact administrator!");
+            error.put("error","Account is disabled, please check your email!");
         } else if (e instanceof BadCredentialsException) {
             log.error("Error logging in: {}",e.getMessage());
             error.put("error","User name or password input error, please re-enter!");

@@ -9,6 +9,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import tn.univ.onlineuniv.models.ERole;
 import tn.univ.onlineuniv.models.Role;
 import tn.univ.onlineuniv.models.User;
 import tn.univ.onlineuniv.models.ConfirmationToken;
@@ -16,10 +17,7 @@ import tn.univ.onlineuniv.repositories.RoleRepository;
 import tn.univ.onlineuniv.repositories.UserRepository;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @AllArgsConstructor
@@ -40,6 +38,7 @@ public class UserService implements UserDetailsService {
         user.setPassword(encodedPassword);
         userRepository.save(user);
         log.info("save a {} to database", user.getFirstName());
+
         String token = UUID.randomUUID().toString();
         ConfirmationToken confirmationToken = new ConfirmationToken(
                 token,
@@ -50,17 +49,18 @@ public class UserService implements UserDetailsService {
         confirmationTokenService.saveConfirmationToken(confirmationToken);
         log.info("save a new user token to database");
         String link = "http://localhost:8080/api/confirm-user?token=" + token;
-
-        emailService.send(user.getEmail(),emailService.buildEmail(user.getFirstName(),link));
-        return token;
+        if(!user.getEnabled()){
+            emailService.send(user.getEmail(),emailService.buildEmail(user.getFirstName(),link));
+        }
+        return "Check your inbox to confirm your email";
     }
 
     public Role saveRole(Role role) {
-        log.info("save a new role {} to database", role.getName());
+        log.info("save a new role {} to database", role.getName().name());
         return roleRepository.save(role);
     }
 
-    public void addRoleToUser(String userEmail, String roleName) {
+    public void addRoleToUser(String userEmail, ERole roleName) {
         User user = userRepository.findByEmail(userEmail);
         Role role = roleRepository.findByName(roleName);
         log.info("add {} to {} successfully", role.getName(), user.getFirstName());
@@ -87,9 +87,7 @@ public class UserService implements UserDetailsService {
         }
 
         Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
-        user.getRoles().forEach(role -> {
-            authorities.add(new SimpleGrantedAuthority(role.getName()));
-        });
+        user.getRoles().forEach(role -> authorities.add(new SimpleGrantedAuthority(role.getName().name())));
         return new org.springframework.security.core.userdetails.User(
                 user.getUsername(),
                 user.getPassword(),
@@ -101,8 +99,14 @@ public class UserService implements UserDetailsService {
         );
     }
 
-    public int enableAppUser(String email) {
-        return userRepository.enableAppUser(email);
+    public void enableAppUser(String email) {
+        userRepository.enableAppUser(email);
+    }
+    public int lockUser(long id){
+                return userRepository.lockUser(id);
+    }
+    public int unlockUser(Long id) {
+        return userRepository.unlockUser(id);
     }
 
     @Transactional
