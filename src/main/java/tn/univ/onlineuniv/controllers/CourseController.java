@@ -6,13 +6,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import tn.univ.onlineuniv.models.Comment;
 import tn.univ.onlineuniv.models.Course;
-import tn.univ.onlineuniv.models.Rate;
 import tn.univ.onlineuniv.models.User;
-import tn.univ.onlineuniv.repositories.CommentRepository;
 import tn.univ.onlineuniv.repositories.CourseRepository;
-import tn.univ.onlineuniv.repositories.RateRepository;
 import tn.univ.onlineuniv.security.utils.JwtUtils;
 import tn.univ.onlineuniv.services.UserService;
 
@@ -26,8 +22,6 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CourseController {
     private final CourseRepository courseRepository;
-    private final CommentRepository commentRepository;
-    private final RateRepository rateRepository;
     private final UserService userService;
     private final JwtUtils jwtUtils = new JwtUtils();
     public tn.univ.onlineuniv.models.User resolveUserFromJWT(String accessToken){
@@ -41,9 +35,9 @@ public class CourseController {
             List<Course> courses = new ArrayList<>();
 
             if (title == null)
-                courseRepository.findAll().forEach(courses::add);
+                courses.addAll(courseRepository.findAll());
             else
-                courseRepository.findByTitle(title).forEach(courses::add);
+                courses.addAll(courseRepository.findByTitle(title));
 
             if (courses.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -59,11 +53,7 @@ public class CourseController {
     public ResponseEntity<Course> getCourseById(@PathVariable("id") long id) {
         Optional<Course> courseData = courseRepository.findById(id);
 
-        if (courseData.isPresent()) {
-            return new ResponseEntity<>(courseData.get(), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
+        return courseData.map(course -> new ResponseEntity<>(course, HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
     }
 
     @PostMapping("/courses/create")
@@ -118,34 +108,5 @@ public class CourseController {
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
-    @PutMapping("/courses/add-comment/{id}")
-    public ResponseEntity<Course> addComment(@PathVariable("id") long id, @RequestBody Comment comment,@RequestHeader(value = "Authorization") String header) {
-        Optional<Course> courseData = courseRepository.findById(id);
-        if (courseData.isPresent()) {
-            String accessToken = header.substring(7);
-            User user = resolveUserFromJWT(accessToken);
-            Comment _comment = commentRepository.save(new Comment(comment.getTitle(),comment.getText(),user));
-            Course _course = courseData.get();
-            List<Comment> oldComments = _course.getComments();
-            oldComments.add(_comment);
-            return new ResponseEntity<>(courseData.get(), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    }
-    @PutMapping("/courses/rate/{id}")
-    public ResponseEntity<Course> rateCourse(@PathVariable("id") long id, @RequestBody Rate rate, @RequestHeader(value = "Authorization") String header) {
-        Optional<Course> courseData = courseRepository.findById(id);
-        if (courseData.isPresent()) {
-            String accessToken = header.substring(7);
-            User user = resolveUserFromJWT(accessToken);
-            Rate _rate = rateRepository.save(new Rate(rate.getRate(),user));
-            Course _course = courseData.get();
-            List<Rate> oldRates = _course.getRates();
-            oldRates.add(_rate);
-            return new ResponseEntity<>(courseData.get(), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
-    }
+
 }

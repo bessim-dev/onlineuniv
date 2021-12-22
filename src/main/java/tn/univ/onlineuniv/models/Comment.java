@@ -8,7 +8,7 @@ import javax.persistence.*;
 
 @Data
 @NoArgsConstructor
-@AllArgsConstructor
+
 @Entity
 public class Comment {
     @Id
@@ -16,13 +16,16 @@ public class Comment {
     private Long id;
     private String title;
     private String text;
+    private Integer rate;
     @ManyToOne
     private User user;
-
-
-    public Comment(String title, String text, User user) {
-        this.title = title;
+    @ManyToOne
+    private Course course;
+    public Comment(String text,Integer rate, User user,Course course) {
+        this.title = user.getFirstName();
         this.text = text;
+        this.rate = rate;
         this.user = user;
+        this.course = course;
     }
 }

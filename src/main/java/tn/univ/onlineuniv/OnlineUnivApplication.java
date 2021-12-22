@@ -14,7 +14,6 @@ import java.util.ArrayList;
 @SpringBootApplication
 public class OnlineUnivApplication {
 
-
 	public static void main(String[] args) {
 		SpringApplication.run(OnlineUnivApplication.class, args);
 	}
