@@ -17,15 +17,19 @@ public class Course {
     private String title;
     private String subject;
     private String description;
+    private String thumbnailUrl;
+    private String videoUrl;
     private boolean published;
     @ManyToOne
     private User user;
 
-    public Course(String title, String subject, String description, boolean published, User user) {
+    public Course(String title, String subject, String description, boolean published,String thumbnailUrl,String videoUrl, User user) {
         this.title = title;
         this.subject = subject ;
         this. description = description ;
         this.published = published ;
+        this.thumbnailUrl = thumbnailUrl;
+        this.videoUrl = videoUrl;
         this.user = user ;
     }
 

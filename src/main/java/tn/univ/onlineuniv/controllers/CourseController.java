@@ -8,20 +8,21 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tn.univ.onlineuniv.models.Course;
 import tn.univ.onlineuniv.models.User;
-import tn.univ.onlineuniv.repositories.CourseRepository;
 import tn.univ.onlineuniv.security.utils.JwtUtils;
+import tn.univ.onlineuniv.services.CourseService;
 import tn.univ.onlineuniv.services.UserService;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+
+import java.util.Collection;
+
 
 @Slf4j
 @RestController
 @RequestMapping("/api")
 @RequiredArgsConstructor
 public class CourseController {
-    private final CourseRepository courseRepository;
+
+    private final CourseService courseService;
     private final UserService userService;
     private final JwtUtils jwtUtils = new JwtUtils();
     public tn.univ.onlineuniv.models.User resolveUserFromJWT(String accessToken){
@@ -30,19 +31,13 @@ public class CourseController {
         return userService.getUser(email);
     }
     @GetMapping("/courses")
-    public ResponseEntity<List<Course>> getAllCourses(@RequestParam(required = false) String title) {
+    public ResponseEntity<Collection<Course>> getAllCourses(@RequestParam("limit") int limit) {
         try {
-            List<Course> courses = new ArrayList<>();
-
-            if (title == null)
-                courses.addAll(courseRepository.findAll());
-            else
-                courses.addAll(courseRepository.findByTitle(title));
+            Collection<Course> courses = courseService.list(limit);
 
             if (courses.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             }
-
             return new ResponseEntity<>(courses, HttpStatus.OK);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -51,9 +46,12 @@ public class CourseController {
 
     @GetMapping("/courses/{id}")
     public ResponseEntity<Course> getCourseById(@PathVariable("id") long id) {
-        Optional<Course> courseData = courseRepository.findById(id);
-
-        return courseData.map(course -> new ResponseEntity<>(course, HttpStatus.OK)).orElseGet(() -> new ResponseEntity<>(HttpStatus.NOT_FOUND));
+        try {
+            Course course = courseService.getCourse(id);
+            return new ResponseEntity<>(course,HttpStatus.OK);
+        }catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
+        }
     }
 
     @PostMapping("/courses/create")
@@ -61,10 +59,10 @@ public class CourseController {
         String accessToken = header.substring(7);
         User user = resolveUserFromJWT(accessToken);
         try {
-            Course _course = courseRepository
-                    .save(new Course(course.getTitle(),course.getSubject() ,course.getDescription(), course.isPublished(),user));
+            Course _course = new Course(course.getTitle(),course.getSubject() ,course.getDescription(), course.isPublished(),course.getThumbnailUrl(),course.getVideoUrl(),user);
+            Course __course = courseService.create(_course);
             log.info("header"+header);
-            return new ResponseEntity<>(_course, HttpStatus.CREATED);
+            return new ResponseEntity<>(__course, HttpStatus.CREATED);
         } catch (Exception e) {
             return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
         }
@@ -72,33 +70,28 @@ public class CourseController {
 
     @PutMapping("/courses/{id}")
     public ResponseEntity<Course> updateCourse(@PathVariable("id") long id, @RequestBody Course course) {
-        Optional<Course> courseData = courseRepository.findById(id);
-        if (courseData.isPresent()) {
-            Course _course = courseData.get();
-            _course.setTitle(course.getTitle());
-            _course.setSubject(course.getSubject());
-            _course.setDescription(course.getDescription());
-            _course.setPublished(course.isPublished());
-            return new ResponseEntity<>(courseRepository.save(_course), HttpStatus.OK);
-        } else {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        try {
+            Course updatedCourse = courseService.update(id,course);
+            return new ResponseEntity<>(updatedCourse, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
     }
 
     @DeleteMapping("/courses/{id}")
     public ResponseEntity<HttpStatus> deleteTutorial(@PathVariable("id") long id) {
         try {
-            courseRepository.deleteById(id);
+            courseService.delete(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } catch (Exception e) {
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
     }
 
     @GetMapping("/courses/published")
-    public ResponseEntity<List<Course>> findByPublished() {
+    public ResponseEntity<Collection<Course>> findByPublished(@RequestParam("limit") int limit) {
         try {
-            List<Course> courses = courseRepository.findByPublished(true);
+            Collection<Course> courses = courseService.publishedList(limit) ;
 
             if (courses.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);

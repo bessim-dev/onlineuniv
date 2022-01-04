@@ -31,6 +31,7 @@ public class OnlineUnivApplication {
 			userService.addRoleToUser("sirineHadded@gmail.com",ERole.ROLE_STUDENT);
 			userService.saveUser(new User("dhia","haddad","dhiaHadded@gmail.com","52401136","123",new ArrayList<>(),false,true));
 			userService.addRoleToUser("dhiaHadded@gmail.com",ERole.ROLE_TEACHER);
+
 		};
 	}
 }
