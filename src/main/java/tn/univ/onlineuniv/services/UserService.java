@@ -9,10 +9,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import tn.univ.onlineuniv.models.ERole;
-import tn.univ.onlineuniv.models.Role;
-import tn.univ.onlineuniv.models.User;
-import tn.univ.onlineuniv.models.ConfirmationToken;
+import tn.univ.onlineuniv.models.*;
 import tn.univ.onlineuniv.repositories.RoleRepository;
 import tn.univ.onlineuniv.repositories.UserRepository;
 
@@ -29,14 +26,26 @@ public class UserService implements UserDetailsService {
     private final BCryptPasswordEncoder bCryptPasswordEncoder;
     private final ConfirmationTokenService confirmationTokenService;
     private final EmailService emailService;
-    public String saveUser(User user) {
-        User userExists = userRepository.findByEmail(user.getEmail());
+    public String SignUpUser(SignUpRequest signUpRequest) {
+        User userExists = userRepository.findByEmail(signUpRequest.getEmail());
         if (userExists != null) {
             throw new IllegalStateException("email already taken");
         }
-        String encodedPassword = bCryptPasswordEncoder.encode(user.getPassword());
-        user.setPassword(encodedPassword);
-        userRepository.save(user);
+        String encodedPassword = bCryptPasswordEncoder.encode(signUpRequest.getPassword());
+
+        Set<Role> roles = new HashSet<>();
+        Role role = roleRepository.findByName(signUpRequest.getRole());
+        if (role == null) {
+            throw new IllegalStateException("role name doesn't exist");
+        }
+        roles.add(role);
+        User user = userRepository.save(new User(signUpRequest.getFirstName(),
+                signUpRequest.getLastName(),
+                signUpRequest.getEmail(),
+                signUpRequest.getPhone(),
+                encodedPassword,
+                roles
+                ));
         log.info("save a {} to database", user.getFirstName());
 
         String token = UUID.randomUUID().toString();
@@ -71,7 +80,6 @@ public class UserService implements UserDetailsService {
         log.info("fetching user");
         return userRepository.findByEmail(email);
     }
-
     public List<User> getUsers() {
         return userRepository.findAll();
     }

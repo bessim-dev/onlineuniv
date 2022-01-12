@@ -5,9 +5,13 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import tn.univ.onlineuniv.models.Course;
+import tn.univ.onlineuniv.models.PublicCourse;
+import tn.univ.onlineuniv.models.User;
 import tn.univ.onlineuniv.repositories.CourseRepository;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -34,10 +38,26 @@ public class CourseService {
     public Course getCourse(Long id){
         return courseRepository.getById(id);
     }
-    public Collection<Course> list(int limit){
-        return courseRepository.findAll(PageRequest.of(0,limit)).toList();
+
+    public List<PublicCourse> list(int limit){
+        Collection<Course> _courses = courseRepository.findAll(PageRequest.of(0,limit)).toList();
+        return _courses.stream().map(course -> {
+            PublicCourse result = new PublicCourse();
+            result.setTitle(course.getTitle());
+            result.setSubject(course.getSubject());
+            result.setDescription(course.getDescription());
+            result.setAuthor(course.getUser().getEmail());
+            result.setThumbnailUrl(course.getThumbnailUrl());
+            result.setId(course.getId());
+            result.setCreatedAt(course.getCreatedAt());
+            return result;
+        }).collect(Collectors.toList());
+
     }
     public Collection<Course> publishedList(int limit){
         return courseRepository.findByPublished(true,PageRequest.of(0,limit));
+    }
+    public Collection<Course> listByAuthor(User user){
+        return courseRepository.findByUser(user);
     }
 }

@@ -1,9 +1,6 @@
 package tn.univ.onlineuniv.security.filter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.Data;
-import lombok.NoArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.*;
@@ -13,7 +10,6 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import tn.univ.onlineuniv.security.utils.JwtUtils;
-import tn.univ.onlineuniv.services.UserService;
 
 import javax.servlet.FilterChain;
 import javax.servlet.http.HttpServletRequest;
@@ -34,8 +30,14 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
-        String email = request.getParameter("email");
-        String password = request.getParameter("password");
+        String email, password;
+        try {
+            Map<String,String> requestMap = new ObjectMapper().readValue(request.getInputStream(), Map.class);
+            email = requestMap.get("email");
+            password = requestMap.get("password");
+        } catch (IOException e) {
+            throw new AuthenticationServiceException(e.getMessage(), e);
+        }
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(email,password);
         return authenticationManager.authenticate(authenticationToken);
     }
@@ -49,6 +51,8 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
         Map<String,String> tokens = new HashMap<>();
         tokens.put("accessToken",accessToken);
         tokens.put("refreshToken",refreshToken);
+        tokens.put("userName", user.getUsername());
+        tokens.put("authorities", String.join(",", authorities));
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         new ObjectMapper().writeValue(response.getOutputStream(),tokens);
     }
@@ -72,6 +76,7 @@ public class CustomAuthenticationFilter extends UsernamePasswordAuthenticationFi
             log.error("Error logging in: {}",e.getMessage());
             error.put("error","User name or password input error, please re-enter!");
         }
+        response.setStatus(401);
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         new ObjectMapper().writeValue(response.getOutputStream(),error);
     }

@@ -7,6 +7,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import tn.univ.onlineuniv.models.Course;
+import tn.univ.onlineuniv.models.PublicCourse;
 import tn.univ.onlineuniv.models.User;
 import tn.univ.onlineuniv.security.utils.JwtUtils;
 import tn.univ.onlineuniv.services.CourseService;
@@ -14,6 +15,7 @@ import tn.univ.onlineuniv.services.UserService;
 
 
 import java.util.Collection;
+import java.util.List;
 
 
 @Slf4j
@@ -31,9 +33,9 @@ public class CourseController {
         return userService.getUser(email);
     }
     @GetMapping("/courses")
-    public ResponseEntity<Collection<Course>> getAllCourses(@RequestParam("limit") int limit) {
+    public ResponseEntity<List<PublicCourse>> getAllCourses(@RequestParam("limit") int limit) {
         try {
-            Collection<Course> courses = courseService.list(limit);
+            List<PublicCourse> courses = courseService.list(limit);
 
             if (courses.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -79,7 +81,7 @@ public class CourseController {
     }
 
     @DeleteMapping("/courses/{id}")
-    public ResponseEntity<HttpStatus> deleteTutorial(@PathVariable("id") long id) {
+    public ResponseEntity<HttpStatus> deleteCourse(@PathVariable("id") long id) {
         try {
             courseService.delete(id);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
@@ -93,6 +95,20 @@ public class CourseController {
         try {
             Collection<Course> courses = courseService.publishedList(limit) ;
 
+            if (courses.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+            return new ResponseEntity<>(courses, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    @GetMapping("/courses/author")
+    public ResponseEntity<Collection<Course>> findByAuthor(@RequestHeader(value = "Authorization") String header){
+        String accessToken = header.substring(7);
+        User user = resolveUserFromJWT(accessToken);
+        try {
+            Collection<Course> courses = courseService.listByAuthor(user) ;
             if (courses.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             }

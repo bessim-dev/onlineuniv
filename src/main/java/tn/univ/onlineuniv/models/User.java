@@ -6,8 +6,11 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 @NoArgsConstructor
@@ -27,19 +30,21 @@ public class User implements UserDetails {
     private String password;
 
     @ManyToMany(fetch = FetchType.EAGER)
-    private Collection<Role> roles = new ArrayList<>();
-
-    private Boolean locked = true;
-    private Boolean enabled = false;
-    public User(String firstName, String lastName,  String email,String phone, String password,Collection<Role> roles) {
+    private Set<Role> roles = new HashSet<>();
+    private LocalDateTime joinDate;
+    private Boolean locked = false;
+    private Boolean enabled = true;
+    public User(String firstName, String lastName,  String email,String phone, String password,Set<Role> roles) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.phone = phone;
         this.password = password;
         this.roles = roles;
+        this.joinDate = LocalDateTime.now();
+
     }
-    public User(String firstName, String lastName,  String email,String phone, String password,Collection<Role> roles,boolean locked,boolean enabled) {
+    public User(String firstName, String lastName,  String email,String phone, String password,Set<Role> roles,boolean locked,boolean enabled) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
