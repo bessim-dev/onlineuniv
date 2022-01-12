@@ -5,6 +5,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
@@ -20,6 +21,7 @@ public class Course {
     private String thumbnailUrl;
     private String videoUrl;
     private boolean published;
+    private LocalDateTime createdAt;
     @ManyToOne
     private User user;
 
@@ -31,6 +33,7 @@ public class Course {
         this.thumbnailUrl = thumbnailUrl;
         this.videoUrl = videoUrl;
         this.user = user ;
+        this.createdAt = LocalDateTime.now();
     }
 
 }
