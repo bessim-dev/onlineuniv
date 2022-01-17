@@ -29,8 +29,8 @@ public class CourseService {
         oldCourse.setPublished(course.isPublished());
         oldCourse.setThumbnailUrl(course.getThumbnailUrl());
         oldCourse.setVideoUrl(course.getVideoUrl());
+        courseRepository.save(oldCourse);
         return oldCourse ;
-
     }
     public void delete(Long id){
         courseRepository.deleteById(id);

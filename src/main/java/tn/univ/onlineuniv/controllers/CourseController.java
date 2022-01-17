@@ -79,7 +79,6 @@ public class CourseController {
             return new ResponseEntity<>(null, HttpStatus.NOT_FOUND);
         }
     }
-
     @DeleteMapping("/courses/{id}")
     public ResponseEntity<HttpStatus> deleteCourse(@PathVariable("id") long id) {
         try {
