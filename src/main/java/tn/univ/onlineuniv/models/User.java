@@ -26,7 +26,6 @@ public class User implements UserDetails {
     private String lastName;
     @Column(unique = true)
     private String email;
-    private String phone;
     private String password;
 
     @ManyToMany(fetch = FetchType.EAGER)
@@ -34,21 +33,19 @@ public class User implements UserDetails {
     private LocalDateTime joinDate;
     private Boolean locked = false;
     private Boolean enabled = true;
-    public User(String firstName, String lastName,  String email,String phone, String password,Set<Role> roles) {
+    public User(String firstName, String lastName,  String email, String password,Set<Role> roles) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
-        this.phone = phone;
         this.password = password;
         this.roles = roles;
         this.joinDate = LocalDateTime.now();
 
     }
-    public User(String firstName, String lastName,  String email,String phone, String password,Set<Role> roles,boolean locked,boolean enabled) {
+    public User(String firstName, String lastName,  String email, String password,Set<Role> roles,boolean locked,boolean enabled) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
-        this.phone = phone;
         this.password = password;
         this.roles = roles;
         this.enabled = enabled;

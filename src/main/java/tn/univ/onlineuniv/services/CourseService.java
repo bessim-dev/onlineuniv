@@ -22,7 +22,7 @@ public class CourseService {
         return courseRepository.save(course);
     }
     public Course update(Long id,Course course){
-        Course oldCourse = courseRepository.getById(id);
+        Course oldCourse = courseRepository.findById(id).get();
         oldCourse.setTitle(course.getTitle());
         oldCourse.setSubject(course.getSubject());
         oldCourse.setDescription(course.getDescription());
@@ -36,10 +36,10 @@ public class CourseService {
         courseRepository.deleteById(id);
     }
     public Course getCourse(Long id){
-        return courseRepository.getById(id);
+        return courseRepository.findById(id).get();
     }
 
-    public List<PublicCourse> list(int limit){
+    public List<PublicCourse> listPublicCourses(int limit){
         Collection<Course> _courses = courseRepository.findAll(PageRequest.of(0,limit)).toList();
         return _courses.stream().map(course -> {
             PublicCourse result = new PublicCourse();
@@ -52,7 +52,9 @@ public class CourseService {
             result.setCreatedAt(course.getCreatedAt());
             return result;
         }).collect(Collectors.toList());
-
+    }
+    public List<Course> listPrivateCourses(int limit){
+        return courseRepository.findByPublished(true, PageRequest.of(0,limit));
     }
     public Collection<Course> publishedList(int limit){
         return courseRepository.findByPublished(true,PageRequest.of(0,limit));

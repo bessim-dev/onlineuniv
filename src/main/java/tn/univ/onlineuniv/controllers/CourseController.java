@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import tn.univ.onlineuniv.models.Course;
 import tn.univ.onlineuniv.models.PublicCourse;
@@ -32,11 +33,24 @@ public class CourseController {
         String email = decodedJWT.getSubject();
         return userService.getUser(email);
     }
-    @GetMapping("/courses")
-    public ResponseEntity<List<PublicCourse>> getAllCourses(@RequestParam("limit") int limit) {
+    @GetMapping("/courses/public")
+    public ResponseEntity<List<PublicCourse>> getPublicCourses(@RequestParam("limit") int limit) {
         try {
-            List<PublicCourse> courses = courseService.list(limit);
+            List<PublicCourse> courses = courseService.listPublicCourses(limit);
 
+            if (courses.isEmpty()) {
+                return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+            }
+            return new ResponseEntity<>(courses, HttpStatus.OK);
+        } catch (Exception e) {
+            return new ResponseEntity<>(null, HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+    @PreAuthorize("hasRole('ROLE_STUDENT')")
+    @GetMapping("/courses/private")
+    public ResponseEntity<List<Course>> getPrivateCourses(@RequestParam("limit") int limit) {
+        try {
+            List<Course> courses = courseService.listPrivateCourses(limit);
             if (courses.isEmpty()) {
                 return new ResponseEntity<>(HttpStatus.NO_CONTENT);
             }

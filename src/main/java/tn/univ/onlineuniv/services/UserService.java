@@ -42,7 +42,6 @@ public class UserService implements UserDetailsService {
         User user = userRepository.save(new User(signUpRequest.getFirstName(),
                 signUpRequest.getLastName(),
                 signUpRequest.getEmail(),
-                signUpRequest.getPhone(),
                 encodedPassword,
                 roles
                 ));
@@ -116,7 +115,20 @@ public class UserService implements UserDetailsService {
     public int unlockUser(Long id) {
         return userRepository.unlockUser(id);
     }
-
+    public User updateUser(long id,UpdateUserForm user){
+        Optional<User> user_db = userRepository.findById(id);
+        if (user_db.isEmpty()) {
+            log.info("User with id {} found in the database", id);
+            throw new UsernameNotFoundException("user not found in DB");
+        }
+        user_db.get().setEnabled(user.getEnabled());
+        user_db.get().setLocked(user.getLocked());
+        user_db.get().setRoles(user.getRoles());
+        user_db.get().setFirstName(user.getFirstName());
+        user_db.get().setLastName(user.getLastName());
+        userRepository.save(user_db.get());
+        return user_db.get();
+    }
     @Transactional
     public String confirmToken(String token) {
         ConfirmationToken confirmationToken = confirmationTokenService.getToken(token)

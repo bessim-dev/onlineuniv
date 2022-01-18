@@ -58,6 +58,16 @@ public class UserController {
     public String confirm(@RequestParam("token") String token) {
         return userService.confirmToken(token);
     }
+    @PutMapping("/user/{id}")
+    public ResponseEntity<User> updateUser(@PathVariable("id") long id,@RequestBody UpdateUserForm user) {
+        try {
+                User _user = userService.updateUser(id,user);
+                return new ResponseEntity<>(_user, HttpStatus.OK);
+
+        } catch (Exception e){
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+    }
     @PutMapping("/user/lock/{id}")
     public ResponseEntity<?> lockUserAccount(@PathVariable("id") long id) {
         Optional<User> user = userRepository.findById(id);

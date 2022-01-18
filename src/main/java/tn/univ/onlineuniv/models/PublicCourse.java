@@ -4,6 +4,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.persistence.Id;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 
 @NoArgsConstructor
@@ -16,5 +17,5 @@ public class PublicCourse {
     private String description;
     private String thumbnailUrl;
     private String author;
-    private LocalDateTime createdAt;
+    private Timestamp createdAt;
 }

@@ -33,9 +33,9 @@ public class OnlineUnivApplication {
 			userService.saveRole(new Role(null,ERole.ROLE_STUDENT));
 			userService.saveRole(new Role(null,ERole.ROLE_TEACHER));
 			userService.saveRole(new Role(null,ERole.ROLE_ADMIN));
-			userService.SignUpUser(new SignUpRequest("bessim","boujebli","bissoooobecim@gmail.com","56121337","123",ERole.ROLE_ADMIN));
-			userService.SignUpUser(new SignUpRequest("sirine","haddad","sirineHadded@gmail.com","52401136","123",ERole.ROLE_TEACHER));
-			userService.SignUpUser(new SignUpRequest("dhia","haddad","dhiaHadded@gmail.com","52401136","123",ERole.ROLE_STUDENT));
+			userService.SignUpUser(new SignUpRequest("bessim","boujebli","bissoooobecim@gmail.com","123",ERole.ROLE_ADMIN));
+			userService.SignUpUser(new SignUpRequest("sirine","haddad","sirineHadded@gmail.com","123",ERole.ROLE_TEACHER));
+			userService.SignUpUser(new SignUpRequest("dhia","haddad","dhiaHadded@gmail.com","123",ERole.ROLE_STUDENT));
 		};
 	}
 }
